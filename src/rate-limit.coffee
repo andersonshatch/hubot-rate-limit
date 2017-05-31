@@ -32,19 +32,11 @@ module.exports = (robot) ->
     response.reply('lastExecutedTime: ' + JSON.stringify(lastExecutedTime))
     response.reply('lastNotifiedTime: ' + JSON.stringify(lastNotifiedTime))
 
-  robot.listenerMiddleware (context, next, done) ->
-    # Retrieve the listener id. If one hasn't been registered, fallback
-    # to using the regex to uniquely identify the listener (even though
-    # it is dirty).
-    listenerID = context.listener.options?.id or context.listener.regex
-    # Bail on unknown because we can't reliably track listeners
+  robot.responseMiddleware (context, next, done) ->
+    listenerID = context.strings
     return unless listenerID?
     try
-      # Default to 1s unless listener or environment variable provides a
-      # different minimum period (listener overrides win here).
-      if context.listener.options?.rateLimits?.minPeriodMs?
-        minPeriodMs = context.listener.options.rateLimits.minPeriodMs
-      else if process.env.HUBOT_RATE_LIMIT_CMD_PERIOD?
+      if process.env.HUBOT_RATE_LIMIT_CMD_PERIOD?
         minPeriodMs = parseInt(process.env.HUBOT_RATE_LIMIT_CMD_PERIOD)*1000
       else
         minPeriodMs = 1*1000
